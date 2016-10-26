@@ -1,5 +1,5 @@
 /*
-Suja
+Makelar
 Config:
 	- path to hugo site directory
 	- path to hugo executable
@@ -30,10 +30,10 @@ import (
 )
 
 type specs struct {
-	Port      string
-	HugoBin   string `envconfig:"hugo_bin"`
-	HugoSite  string `envconfig:"hugo_site"`
-	OutputDir string `envconfig:"output_dir"`
+	Port      string `default:"8080"`
+	HugoBin   string `envconfig:"hugo_bin" required:"true"`
+	HugoSite  string `envconfig:"hugo_site" required:"true"`
+	OutputDir string `envconfig:"output_dir" default:"."`
 	URL       string `default:"/webhook"`
 }
 
@@ -45,6 +45,7 @@ func main() {
 	}
 
 	path := s.HugoSite
+	output := s.OutputDir
 	urlPath := s.URL
 
 	port := ":" + s.Port
@@ -52,29 +53,29 @@ func main() {
 	fmt.Println("hugo path", s.HugoBin)
 
 	fmt.Println("Server run on port:", s.Port)
-	runCmd(path)
+	runCmd(path, output)
 	fmt.Println("waiting incoming request...")
 
 	http.HandleFunc(urlPath, func(w http.ResponseWriter, r *http.Request) {
-		runCmd(path)
-		fmt.Fprintf(w, "all command done")
+		runCmd(path, output)
+		fmt.Fprintf(w, "site updated")
 	})
 	if err := http.ListenAndServe(port, nil); err != nil {
 		fmt.Println("error cuk")
 	}
 }
 
-func runCmd(path string) {
+func runCmd(path, output string) {
 	if err := runGitPull(path); err != nil {
 		log.Fatal(err)
 	}
-	if err := runHugo(path); err != nil {
+	if err := runHugo(path, output); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func runHugo(path string) error {
-	cmd := exec.Command(s.HugoBin)
+func runHugo(path, output string) error {
+	cmd := exec.Command(s.HugoBin, "-d", output)
 	cmd.Dir = path
 	var out bytes.Buffer
 	cmd.Stdout = &out
