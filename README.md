@@ -1,6 +1,11 @@
 # Makelar
 
-Little program to receive webhook than trigger hugo build
+![Unmaintained](https://img.shields.io/badge/status-unmaintained-red.svg)
+
+Little program to receive webhook then update repository, 
+build [hugo](http://gohugo.io/) site to output directory.
+
+This project just my naive implementation for learning golang.
 
 Usage:
 
